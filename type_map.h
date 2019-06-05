@@ -3,22 +3,29 @@
 template<int KEY, typename VALUE>
 struct key_value { };
 
-template<typename... Args>
-class type_map;
+template<bool IS_LESS>
+struct is_key_less;
 
-template<int KEY, typename VALUE, typename... Args>
-struct type_map<key_value<KEY, VALUE>, Args...> :
-public type_map<Args...>
+template<>
+struct is_key_less<true> { };
+
+template<typename... Args>
+struct type_map;
+
+template<int KEY1, typename VALUE1, int KEY2, typename VALUE2, typename... Args>
+struct type_map<key_value<KEY1, VALUE1>, key_value<KEY2, VALUE2>, Args...> :
+          public type_map<key_value<KEY2, VALUE2>, Args...>
+        , virtual public is_key_less<KEY1<KEY2>
 {
-typedef VALUE type_value;
-type_value value;
+    typedef VALUE1 type_value;
+    type_value value;
 };
 
 template<int KEY, typename VALUE>
 struct type_map<key_value<KEY, VALUE>>
 {
-typedef VALUE type_value;
-type_value value;
+    typedef VALUE type_value;
+    type_value value;
 };
 
 template<bool IS_EQUAL, int KEY_E, class T>
@@ -34,18 +41,6 @@ class type_map_element_compare<true, KEY_E, type_map<key_value<KEY1, VALUE1>, ke
 {
 public:
     typedef type_map<key_value<KEY1, VALUE1>, key_value<KEY2, VALUE2>, Args...> type;
-};
-
-template<int KEY_E, int KEY1, typename VALUE1, int KEY2, typename VALUE2>
-class type_map_element_compare<false, KEY_E, type_map<key_value<KEY1, VALUE1>, key_value<KEY2, VALUE2>>> :
-        public type_map_element_compare<KEY_E==KEY2, KEY_E, type_map<key_value<KEY2, VALUE2>>> { };
-
-template<int KEY_E, int KEY1, typename VALUE1, int KEY2, typename VALUE2>
-class type_map_element_compare<true, KEY_E, type_map<key_value<KEY1, VALUE1>, key_value<KEY2, VALUE2>>> :
-        public type_map<key_value<KEY1, VALUE1>, key_value<KEY2, VALUE2>>
-{
-public:
-    typedef type_map<key_value<KEY1, VALUE1>, key_value<KEY2, VALUE2>> type;
 };
 
 template<int KEY_E, int KEY, typename VALUE>
